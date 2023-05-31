@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <iostream>
+#include <sstream>
 #include <math.h>
 #include <stdint.h>
 #include <assert.h>
@@ -10,6 +11,46 @@
 #undef TEST_AA
 
 using namespace std;
+
+/**
+ * @brief 使用find_first_of通过指定的分隔符分割字符串
+ * @param srcStr 源字符串
+ * @param v_data 被分割后的字符串容器引用
+ * @param splitSymbol 分割符号
+ */
+void split_string(string srcStr,vector<string> &v_splitStr,string splitSymbol)
+{
+	//清空容器
+	vector<string>().swap(v_splitStr);
+	while(string::npos != srcStr.find_first_of(splitSymbol)){
+		//获取第一个分隔符之前的文件类型
+		string strT = srcStr.substr(0,srcStr.find_first_of(splitSymbol));
+		//将分割的字符加入到容器列表最后
+		v_splitStr.push_back(strT);
+		//删除分割字符前面的，保留后面的字符串
+		srcStr = srcStr.substr(srcStr.find_first_of(splitSymbol)+1,srcStr.size());
+	}
+	//最后的一个分割符号后面或者没有匹配到分割符号的字符加入容器列表
+	v_splitStr.push_back(srcStr);
+}
+
+/**
+ * @brief 使用getline通过指定的分隔符分割字符串
+ * @param srcStr 源字符串
+ * @param v_data 被分割后的字符串容器引用
+ * @param delimiter 分割符号
+ */
+void getDataByDelimiter(string srcStr, vector<string> &v_data, char delimiter)
+{
+    // 将语句按逗号分隔成多个字段
+    stringstream ss(srcStr);
+    string field;
+    while (std::getline(ss, field, delimiter)) { //getline（）返回的istream是隐式调用它的操作符void *（）方法的，它返回流是否已经遇到错误。 因此，它比eof（）的调用进行更多的检查。
+    // while (!std::getline(ss, field, delimiter).eof()) {
+        std::cout << "field:" << field << std::endl;
+        v_data.push_back(field);
+    }
+}
 
 /**
  * 测试大、小端字节序
@@ -55,14 +96,26 @@ void testPreDefineMacros() {
     
 }
 
-int main(){
-    cout<<"***Test---C++!***"<<endl;
+void testString() {
+	string nmea_rmc = "$GPRMC,,A,3849.728158,N,11527.257657,E,0.0,0.0,080322,5.4,W,A*24";
+    const char *frame_rmc = nmea_rmc.c_str();
 
-	test_MSB_LSB();
+    std::vector<std::string> v_data1;
+    std::vector<std::string> v_data2;
+    split_string(frame_rmc, v_data1, ",");
+    getDataByDelimiter(frame_rmc, v_data2,',');
 
-	testPreDefineMacros();
-    
-    /********************Struct/Enum Test**********************/
+	std::stringstream ss("12");
+    //按十进制输出整型
+    printf("\n%s called: ss[%d]!\n", __func__, stoi(ss.str(),0));
+    //按八进制输出整型
+    printf("%s called: ss-o[%d]!\n", __func__, stoi(ss.str(),0,8));
+    //按十六进制输出整型
+    printf("%s called: ss-hex[%d]!\n", __func__, stoi(ss.str(),0,16));
+}
+
+
+void testStructAndEnum() {
     struct TEST_STRUCT {
 	   uint64_t a;
 	   uint64_t b;
@@ -114,7 +167,18 @@ int main(){
 	    sizeof(testDef),
 	    testVector.size(),
 	    sizeof(testVector));
-    /********************Struct/Enum Test**********************/
-    
+}
+
+int main(){
+    cout<<"***Test---C++!***"<<endl;
+
+	// test_MSB_LSB();
+
+	// testPreDefineMacros();
+
+	testString();
+
+	// testStructAndEnum();
+
     return 0;
 }
